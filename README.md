@@ -2,7 +2,7 @@
 
 # 🎬 Auralix
 
-**Reproductor multimedia personalizado con telemetría de sesiones**
+**Reproductor multimedia inteligente con análisis de sesiones en tiempo real**
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.x-000?logo=flask)](https://flask.palletsprojects.com)
@@ -10,7 +10,7 @@
 [![HTML5](https://img.shields.io/badge/HTML5_Media_API-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement)
 [![Status](https://img.shields.io/badge/Status-Production-brightgreen)]()
 
-_Reproductor audio/vídeo con controles personalizados, upload local, analytics de reproducción y Design System v2_
+_Experimenta el poder de la HTML5 Media API con controles personalizados, telemetría avanzada y un sistema de análisis completo_
 
 </div>
 
@@ -27,21 +27,30 @@ _Reproductor audio/vídeo con controles personalizados, upload local, analytics 
 - [Uso](#-uso)
 - [API REST](#-api-rest)
 - [Controles de teclado](#-controles-de-teclado)
-- [14 Mejoras Design System v2](#-14-mejoras-design-system-v2)
 - [Estructura del proyecto](#-estructura-del-proyecto)
+- [Contexto académico](#-contexto-académico)
 - [Autor](#-autor)
 
 ---
 
 ## 🎯 Descripción
 
-**Auralix** es un reproductor multimedia web completo que demuestra el uso avanzado de la HTML5 Media API. La aplicación permite:
+**Auralix** es un reproductor multimedia web de nueva generación que combina la potencia de la HTML5 Media API con un sistema completo de análisis y gestión de sesiones. Diseñado como una solución full-stack, Auralix no solo reproduce contenido multimedia, sino que registra, analiza y visualiza cada interacción del usuario.
 
-- Reproducir **audio y vídeo** con controles personalizados (sin el atributo `controls` nativo)
-- **Subir archivos de música y vídeo** directamente desde el ordenador (drag & drop o selector de archivos)
-- **Registrar telemetría completa** de cada interacción: play, pause, seek, speed, volume, ended
-- **Gestionar sesiones** con métricas de completitud y posición
-- **Visualizar analytics** con KPIs, leaderboard y historial por operador
+### ¿Qué hace especial a Auralix?
+
+- **🎮 Controles totalmente personalizados** — Interfaz diseñada desde cero sin usar los controles nativos del navegador
+- **📤 Gestión de medios local** — Sube tus propios archivos mediante drag & drop o selección directa
+- **📊 Telemetría en tiempo real** — Registra cada acción: play, pause, seek, cambios de velocidad y volumen
+- **🎯 Sistema de sesiones** — Cada reproducción genera una sesión completa con métricas de completitud
+- **📈 Analytics incorporado** — Visualiza KPIs, rankings de operadores y históricos de reproducción
+- **🌓 Experiencia adaptativa** — Tema claro/oscuro con persistencia y diseño responsive
+
+### 💭 La filosofía detrás de Auralix
+
+Auralix nace de la idea de que los reproductores multimedia pueden ser mucho más que simples interfaces de play/pause. Al integrar un sistema completo de telemetría y análisis, cada reproducción se convierte en una fuente valiosa de información sobre patrones de uso, preferencias y comportamiento del usuario.
+
+**El nombre "Auralix"** combina "Aura" (el ambiente único que cada medio genera) y "lix" (sufijo que evoca fluidez y experiencia moderna), representando la experiencia envolvente que buscamos crear.
 
 ---
 
@@ -149,30 +158,46 @@ Los archivos se guardan en `static/uploads/` con nombre UUID seguro y se registr
 git clone https://github.com/agusmadev/Auralix.git
 cd Auralix
 
-# 2. Entorno virtual
-python3 -m venv venv && source venv/bin/activate
+# 2. Crear entorno virtual
+# En Linux/Mac:
+python3 -m venv .venv
+source .venv/bin/activate
 
-# 3. Dependencias
+# En Windows:
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+
+# 3. Instalar dependencias
 pip install -r requirements.txt
 
-# 4. Ejecutar
-python3 app.py
+# 4. Ejecutar la aplicación
+python app.py
 ```
 
-Abrir → **http://localhost:5070**
+📱 Abrir → **http://localhost:5070**
 
-> 💡 La BD SQLite y los datos seed se crean automáticamente al iniciar.
+> 💡 **Nota**: La base de datos SQLite (`auralix.sqlite3`) y los datos de ejemplo se generan automáticamente en el primer inicio.
 
 ---
 
 ## 📖 Uso
 
-1. **Regístrate** con nombre + DNI
-2. **Añade medios** por URL o **sube archivos** desde tu ordenador (drag & drop)
-3. **Carga** un medio y usa los controles personalizados
-4. **Usa atajos de teclado**: Space (play/pause), flechas (seek/volumen)
-5. **Cambia el tema** con el botón 🌙 (esquina superior derecha)
-6. **Consulta métricas** en el panel derecho: KPIs, ranking, historial
+### 🚀 Inicio rápido
+
+1. **👤 Regístrate como operador** — Ingresa tu nombre + DNI para comenzar  
+2. **📁 Construye tu biblioteca** — Añade medios por URL o arrastra archivos locales (MP3, MP4, WEBM...)  
+3. **▶️ Reproduce contenido** — Carga cualquier medio y utiliza los controles personalizados  
+4. **⌨️ Atajos de teclado** — `Space` (play/pause), `←→` (seek ±5s), `↑↓` (volumen)  
+5. **🎨 Personaliza tu experiencia** — Botón 🌙 para cambiar entre tema claro/oscuro  
+6. **📊 Monitorea tu actividad** — Panel lateral con KPIs en tiempo real, ranking y tu historial
+
+### 💡 Características destacadas
+
+- **Drag & Drop inteligente**: Simplemente arrastra archivos multimedia sobre la zona de subida
+- **Progreso en tiempo real**: Barra de progreso visual durante la subida de archivos
+- **Click-to-seek**: Haz click en cualquier punto de la barra de progreso para saltar
+- **Sistema de rankings**: Compite con otros operadores por el mayor número de reproducciones completas
+- **Exportación de datos**: Descarga tu biblioteca y estadísticas en formato JSON
 
 ---
 
@@ -224,8 +249,8 @@ Auralix/
 │   └── uploads/                    # Archivos subidos desde el ordenador
 ├── docs/
 │   └── Actividad_*.md
-├── Actividad_ReproductorMultimediaPersonalizado_53945291X.md
-├── Plantilla_Examen_Media_Control_Hub.md
+├── Actividad_Auralix_53945291X.md
+├── Plantilla_Examen_Auralix.md
 └── README.md
 ```
 
@@ -233,24 +258,34 @@ Auralix/
 
 ## 🎓 Contexto académico
 
-| Campo     | Valor                                                 |
-| --------- | ----------------------------------------------------- |
-| Módulo    | PMDM — Programación Multimedia y Dispositivos Móviles |
-| Ciclo     | DAM2 · Desarrollo de Aplicaciones Multiplataforma     |
-| Curso     | 2025 / 2026                                           |
-| Actividad | 003 · Reproductor Multimedia Personalizado            |
+**Auralix** es un proyecto desarrollado como parte del módulo de **Programación Multimedia y Dispositivos Móviles (PMDM)** en el ciclo de **Desarrollo de Aplicaciones Multiplataforma (DAM2)**.
+
+| Campo          | Valor                                              |
+| -------------- | -------------------------------------------------- |
+| 📚 Módulo      | PMDM — Programación Multimedia y Dispositivos Móviles |
+| 🎓 Ciclo       | DAM2 · Desarrollo de Aplicaciones Multiplataforma |
+| 📅 Curso       | 2025 / 2026                                        |
+| 📝 Actividad   | 003 · Reproductor Multimedia Personalizado         |
+| 🎯 Objetivos   | HTML5 Media API, WebSockets, REST APIs, Persistencia |
+
+### 🏆 Características implementadas
+
+Este proyecto va más allá de los requisitos básicos, implementando un sistema completo de telemetría, analytics en tiempo real, gestión de archivos locales, sistema de temas y exportación/importación de datos.
 
 ---
 
 ## 👤 Autor
 
-**Agustín Morcillo (agusmadev)**
-DAM2 2025/26
+**Agustín Morcillo** · [@agusmadev](https://github.com/agusmadev)  
+DAM2 · Desarrollo de Aplicaciones Multiplataforma  
+Curso 2025/26
 
 ---
 
 <div align="center">
 
-_Built with ❤️ using HTML5 Media API + Flask_
+_Desarrollado con ❤️ usando HTML5 Media API + Flask + SQLite_
+
+**[⬆ Volver arriba](#-auralix)**
 
 </div>
