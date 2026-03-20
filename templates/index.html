@@ -3,101 +3,274 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Auralix · PMDM 003</title>
+    <title>Auralix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   </head>
   <body>
-    <button class="theme-toggle" id="themeToggle" title="Cambiar tema">🌙</button>
-    <div id="toastBox"></div>
+    <!-- Toast Notifications -->
+    <div id="toastBox" class="toast-container"></div>
 
-    <main class="layout">
-      <section class="panel player-panel">
-        <h1>Auralix</h1>
-        <p class="subtitle">Reproductor personalizado con trazabilidad de sesiones</p>
-
-        <div class="auth-row">
-          <input id="operatorName" type="text" placeholder="Nombre" />
-          <input id="operatorDni" type="text" placeholder="DNI" value="53945291X" />
-          <button id="btnRegister">Registrar operador</button>
+    <!-- Header Minimalista -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="10 8 16 12 10 16 10 8"/>
+          </svg>
+          <span class="logo-text">Auralix</span>
         </div>
+        <div class="header-actions">
+          <button class="icon-btn" id="themeToggle" title="Cambiar tema">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
 
-        <div class="media-stage">
+    <!-- Vista Principal: Player -->
+    <main class="app-main" id="viewPlayer">
+      <!-- Auth Banner -->
+      <div class="auth-banner" id="authBanner">
+        <div class="auth-content">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <div class="auth-inputs">
+            <input id="operatorName" type="text" placeholder="Tu nombre" class="auth-input" />
+            <input id="operatorDni" type="text" placeholder="DNI" value="53945291X" class="auth-input" />
+          </div>
+          <button id="btnRegister" class="btn-primary">Iniciar Sesión</button>
+        </div>
+      </div>
+
+      <!-- Player Central -->
+      <div class="player-container">
+        <!-- Media Display -->
+        <div class="media-display">
           <video id="videoPlayer" playsinline preload="metadata"></video>
           <audio id="audioPlayer" preload="metadata"></audio>
-          <div id="nowPlaying"><span class="playing-dot" id="playingDot"></span>Selecciona un contenido de la biblioteca</div>
+          <div class="media-placeholder" id="mediaPlaceholder">
+            <div class="placeholder-icon">
+              <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10" opacity="0.2"/>
+                <polygon points="10 8 16 12 10 16 10 8"/>
+              </svg>
+            </div>
+            <p class="placeholder-text">Selecciona un medio de tu biblioteca</p>
+          </div>
         </div>
 
-        <div class="progress-bar" id="progressBar">
-          <div class="progress-fill" id="progressFill"></div>
+        <!-- Now Playing Info -->
+        <div class="now-playing-info">
+          <div id="nowPlaying" class="track-title">
+            <span class="playing-dot" id="playingDot"></span>
+            <span class="track-name">Sin reproducción</span>
+          </div>
+          <div class="track-meta">
+            <span id="trackGenre" class="genre-tag"></span>
+          </div>
         </div>
-        <span id="timeInfo" style="font-size:var(--fs-xs);color:var(--muted);">00:00 / 00:00</span>
 
-        <div class="controls-grid">
-          <button id="btnPlay">▶ Reproducir</button>
-          <button id="btnPause">⏸ Pausar</button>
-          <button id="btnStop">⏹ Detener</button>
-          <button id="btnBack">⏪ -10s</button>
-          <button id="btnForward">⏩ +10s</button>
-          <label>Velocidad
-            <select id="speed">
-              <option value="0.75">0.75x</option>
-              <option value="1" selected>1x</option>
-              <option value="1.25">1.25x</option>
-              <option value="1.5">1.5x</option>
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <span id="timeInfo" class="time-label">0:00</span>
+          <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+            <div class="progress-thumb"></div>
+          </div>
+          <span id="timeDuration" class="time-label">0:00</span>
+        </div>
+
+        <!-- Main Controls -->
+        <div class="player-controls">
+          <button class="control-btn control-secondary" id="btnBack" title="Retroceder 10s">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9"/>
+              <path d="M3 4v8h8"/>
+              <text x="12" y="16" font-size="8" fill="currentColor" text-anchor="middle">10</text>
+            </svg>
+          </button>
+          
+          <button class="control-btn control-main" id="btnPlay">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </button>
+
+          <button class="control-btn control-main" id="btnPause" style="display:none;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16"/>
+              <rect x="14" y="4" width="4" height="16"/>
+            </svg>
+          </button>
+          
+          <button class="control-btn control-secondary" id="btnForward" title="Avanzar 10s">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 1 1-9-9"/>
+              <path d="M21 4v8h-8"/>
+              <text x="12" y="16" font-size="8" fill="currentColor" text-anchor="middle">10</text>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Secondary Controls -->
+        <div class="secondary-controls">
+          <button class="control-btn control-small" id="btnStop" title="Detener">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12"/>
+            </svg>
+          </button>
+
+          <div class="volume-control">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+            <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8" class="volume-slider" />
+          </div>
+
+          <div class="speed-control">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <select id="speed" class="speed-select">
+              <option value="0.75">0.75×</option>
+              <option value="1" selected>1.0×</option>
+              <option value="1.25">1.25×</option>
+              <option value="1.5">1.5×</option>
             </select>
-          </label>
-          <label>Volumen
-            <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8" />
-          </label>
+          </div>
         </div>
 
-        <p class="shortcuts-hint"><kbd>Espacio</kbd> play/pausa · <kbd>←</kbd><kbd>→</kbd> ±5s · <kbd>↑</kbd><kbd>↓</kbd> volumen</p>
-      </section>
+        <!-- Keyboard Shortcuts Hint -->
+        <div class="shortcuts-hint">
+          <kbd>Space</kbd> Play/Pausa · <kbd>←→</kbd> ±5s · <kbd>↑↓</kbd> Volumen
+        </div>
+      </div>
+    </main>
 
-      <section class="panel data-panel">
-        <h2>📂 Biblioteca</h2>
-        <form id="mediaForm" class="media-form">
-          <input name="title" type="text" placeholder="Título" required />
-          <select name="kind">
-            <option value="audio">Audio</option>
-            <option value="video">Vídeo</option>
-          </select>
-          <input name="sourceUrl" type="url" placeholder="URL fuente" required />
-          <input name="durationSeconds" type="number" min="0" placeholder="Duración (s)" />
-          <input name="genre" type="text" placeholder="Género" />
-          <button type="submit">Añadir por URL</button>
-        </form>
+    <!-- Vista: Biblioteca (Oculta por defecto) -->
+    <div class="app-view" id="viewLibrary" style="display:none;">
+      <div class="view-content">
+        <h2 class="view-title">Biblioteca</h2>
+        
+        <!-- Add Media Form -->
+        <div class="add-media-section">
+          <button class="btn-toggle" id="toggleAddForm">+ Añadir Medio</button>
+          <form id="mediaForm" class="media-form" style="display:none;">
+            <input name="title" type="text" placeholder="Título" required class="form-input" />
+            <select name="kind" class="form-select">
+              <option value="audio">🎵 Audio</option>
+              <option value="video">🎥 Video</option>
+            </select>
+            <input name="sourceUrl" type="url" placeholder="URL del medio" required class="form-input" />
+            <div class="form-row">
+              <input name="durationSeconds" type="number" min="0" placeholder="Duración (s)" class="form-input" />
+              <input name="genre" type="text" placeholder="Género" class="form-input" />
+            </div>
+            <button type="submit" class="btn-primary">Añadir</button>
+          </form>
+        </div>
 
+        <!-- Upload Zone -->
         <div class="upload-zone" id="uploadZone">
-          <div class="upload-icon">📁</div>
-          <p>Arrastra archivos aquí o <label for="uploadInput" class="upload-label">selecciona desde tu ordenador</label></p>
-          <p class="upload-hint">MP3 · WAV · OGG · FLAC · MP4 · WEBM · MOV (máx. 100 MB)</p>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p class="upload-text">Arrastra archivos aquí o <label for="uploadInput" class="upload-link">explora</label></p>
+          <p class="upload-hint">MP3, WAV, OGG, FLAC, MP4, WEBM, MOV (máx. 100 MB)</p>
           <input type="file" id="uploadInput" accept="audio/*,video/*" multiple hidden />
         </div>
-        <div id="uploadProgress" class="upload-progress" style="display:none">
+        
+        <div id="uploadProgress" class="upload-progress" style="display:none;">
           <div class="upload-bar" id="uploadBar"></div>
-          <span id="uploadStatus">Subiendo...</span>
+          <span id="uploadStatus" class="upload-status">Subiendo...</span>
         </div>
 
-        <div id="library"></div>
+        <!-- Library List -->
+        <div id="library" class="media-library"></div>
 
+        <!-- Data Actions -->
         <div class="data-actions">
-          <button class="btn-seed" id="seedBtn">🌱 Seed</button>
-          <button class="btn-export" id="exportBtn">📥 Exportar</button>
-          <button class="btn-import" id="importBtn">📤 Importar</button>
+          <button class="btn-outline" id="seedBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M2 12h20"/>
+            </svg>
+            Generar Datos Demo
+          </button>
+          <button class="btn-outline" id="exportBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Exportar
+          </button>
+          <button class="btn-outline" id="importBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Importar
+          </button>
         </div>
         <input type="file" id="importFile" accept=".json" hidden />
+      </div>
+    </div>
 
-        <h2>📊 Métricas</h2>
-        <div id="stats" class="kpis"></div>
+    <!-- Vista: Analytics (Oculta por defecto) -->
+    <div class="app-view" id="viewAnalytics" style="display:none;">
+      <div class="view-content">
+        <h2 class="view-title">Analytics</h2>
+        
+        <div class="stats-grid" id="stats"></div>
+        
+        <h3 class="section-title">🏆 Ranking</h3>
+        <div id="leaders" class="leaderboard"></div>
+        
+        <h3 class="section-title">📜 Mi Historial</h3>
+        <div id="history" class="history"></div>
+      </div>
+    </div>
 
-        <h2>🏆 Ranking</h2>
-        <div id="leaders"></div>
-
-        <h2>📜 Historial operador</h2>
-        <div id="history"></div>
-      </section>
-    </main>
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-view="viewPlayer">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polygon points="10 8 16 12 10 16 10 8"/>
+        </svg>
+        <span>Player</span>
+      </button>
+      <button class="nav-btn" data-view="viewLibrary">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3h18v18H3z"/>
+          <path d="M3 9h18"/>
+          <path d="M9 21V9"/>
+        </svg>
+        <span>Biblioteca</span>
+      </button>
+      <button class="nav-btn" data-view="viewAnalytics">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        <span>Analytics</span>
+      </button>
+    </nav>
 
     <script src="{{ url_for('static', filename='app.js') }}"></script>
   </body>

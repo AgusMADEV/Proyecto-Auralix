@@ -3,6 +3,7 @@ const state = {
   operatorName: "",
   currentMedia: null,
   currentSessionId: null,
+  currentView: "viewPlayer",
 };
 
 const el = {
@@ -41,7 +42,33 @@ const el = {
   uploadProgress: document.getElementById("uploadProgress"),
   uploadBar: document.getElementById("uploadBar"),
   uploadStatus: document.getElementById("uploadStatus"),
+  /* new minimalist refs */
+  mediaPlaceholder: document.getElementById("mediaPlaceholder"),
+  trackGenre: document.getElementById("trackGenre"),
+  authBanner: document.getElementById("authBanner"),
+  toggleAddForm: document.getElementById("toggleAddForm"),
 };
+
+/* ─── Navigation System ─── */
+function switchView(viewId) {
+  // Hide all views
+  const views = ['viewPlayer', 'viewLibrary', 'viewAnalytics'];
+  views.forEach(id => {
+    const view = document.getElementById(id);
+    if (view) view.style.display = 'none';
+  });
+  
+  // Show selected view
+  const selectedView = document.getElementById(viewId);
+  if (selectedView) selectedView.style.display = 'block';
+  
+  // Update nav buttons
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === viewId);
+  });
+  
+  state.currentView = viewId;
+}
 
 function activePlayer() {
   if (state.currentMedia?.kind === "audio") {
@@ -88,20 +115,25 @@ function initTheme() {
   const saved = localStorage.getItem('auralix-theme');
   if (saved === 'light') {
     document.documentElement.classList.add('light');
-    el.themeToggle.textContent = '☀️';
+    // Update SVG for theme toggle (sun icon)
   }
 }
 
 function toggleTheme() {
   const isLight = document.documentElement.classList.toggle('light');
   localStorage.setItem('auralix-theme', isLight ? 'light' : 'dark');
-  el.themeToggle.textContent = isLight ? '☀️' : '🌙';
   showToast(`Tema ${isLight ? 'claro' : 'oscuro'} activado`, 'info');
 }
 
 async function registerOperator() {
   const name = el.operatorName.value.trim();
   const dni = el.operatorDni.value.trim();
+  
+  if (!name) {
+    showToast('Por favor ingresa tu nombre', 'warning');
+    return;
+  }
+  
   const data = await api("/api/operators/register", {
     method: "POST",
     body: JSON.stringify({ name, dni }),
@@ -109,8 +141,19 @@ async function registerOperator() {
 
   state.operatorId = data.operatorId;
   state.operatorName = data.name;
-  el.nowPlaying.innerHTML = `<span class="playing-dot" id="playingDot"></span>Operador activo: ${data.name} (${data.dni})`;
-  showToast(`✅ Operador ${data.name} registrado`, 'ok');
+  
+  // Update UI
+  const trackNameEl = el.nowPlaying.querySelector('.track-name');
+  if (trackNameEl) {
+    trackNameEl.textContent = `Bienvenido, ${data.name}`;
+  }
+  
+  // Hide auth banner
+  if (el.authBanner) {
+    el.authBanner.style.display = 'none';
+  }
+  
+  showToast(`✅ Sesión iniciada como ${data.name}`, 'ok');
   await refreshStats();
   await refreshLeaders();
   await refreshHistory();
@@ -169,6 +212,11 @@ function switchTo(kind) {
     el.video.style.display = "block";
     el.audio.pause();
   }
+  
+  // Hide placeholder when media is loaded
+  if (el.mediaPlaceholder) {
+    el.mediaPlaceholder.style.display = 'none';
+  }
 }
 
 function bindProgressEvents(player) {
@@ -177,7 +225,12 @@ function bindProgressEvents(player) {
     const current = player.currentTime || 0;
     const pct = duration > 0 ? (current / duration) * 100 : 0;
     el.progressFill.style.width = `${pct}%`;
-    el.timeInfo.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
+    el.timeInfo.textContent = formatTime(current);
+    
+    const durationEl = document.getElementById('timeDuration');
+    if (durationEl) {
+      durationEl.textContent = formatTime(duration);
+    }
   });
 
   player.addEventListener("play", () => setPlayingDot(true));
@@ -185,9 +238,16 @@ function bindProgressEvents(player) {
 
   player.addEventListener("ended", async () => {
     setPlayingDot(false);
+    el.btnPlay.style.display = 'flex';
+    el.btnPause.style.display = 'none';
     await endSession(true);
     await pushEvent("ended", { ended: true });
-    el.nowPlaying.innerHTML = `<span class="playing-dot" id="playingDot"></span>Reproducción completada`;
+    
+    const trackNameEl = el.nowPlaying.querySelector('.track-name');
+    if (trackNameEl) {
+      trackNameEl.textContent = 'Reproducción completada';
+    }
+    
     showToast('🎬 Reproducción completada', 'ok');
     await refreshStats();
     await refreshLeaders();
@@ -211,7 +271,20 @@ async function loadMedia(item) {
   const player = activePlayer();
   player.src = item.source_url;
   player.load();
-  el.nowPlaying.innerHTML = `<span class="playing-dot" id="playingDot"></span>Cargado: ${item.title} [${item.kind}]`;
+  
+  // Update UI
+  const trackNameEl = el.nowPlaying.querySelector('.track-name');
+  if (trackNameEl) {
+    trackNameEl.textContent = item.title;
+  }
+  
+  if (el.trackGenre) {
+    el.trackGenre.textContent = item.genre || 'Sin género';
+  }
+  
+  // Switch to player view
+  switchView('viewPlayer');
+  
   showToast(`📀 ${item.title} cargado`, 'info');
 
   if (state.operatorId) {
@@ -349,8 +422,12 @@ async function play() {
   const player = activePlayer();
   await player.play();
   setPlayingDot(true);
+  
+  // Toggle buttons
+  el.btnPlay.style.display = 'none';
+  el.btnPause.style.display = 'flex';
+  
   await pushEvent("play", { rate: player.playbackRate, volume: player.volume });
-  el.nowPlaying.innerHTML = `<span class="playing-dot active" id="playingDot"></span>▶ ${state.currentMedia.title}`;
   showToast('▶ Reproduciendo', 'ok');
 }
 
@@ -358,8 +435,12 @@ async function pause() {
   const player = activePlayer();
   player.pause();
   setPlayingDot(false);
+  
+  // Toggle buttons
+  el.btnPlay.style.display = 'flex';
+  el.btnPause.style.display = 'none';
+  
   await pushEvent("pause", {});
-  el.nowPlaying.innerHTML = `<span class="playing-dot" id="playingDot"></span>⏸ Pausa: ${state.currentMedia?.title || ''}`;
   showToast('⏸ Pausado', 'info');
 }
 
@@ -369,9 +450,19 @@ async function stop() {
   player.currentTime = 0;
   setPlayingDot(false);
   el.progressFill.style.width = '0%';
+  
+  // Show play button
+  el.btnPlay.style.display = 'flex';
+  el.btnPause.style.display = 'none';
+  
   await pushEvent("stop", {});
   await endSession(false);
-  el.nowPlaying.innerHTML = '<span class="playing-dot" id="playingDot"></span>⏹ Detenido';
+  
+  const trackNameEl = el.nowPlaying.querySelector('.track-name');
+  if (trackNameEl && state.currentMedia) {
+    trackNameEl.textContent = state.currentMedia.title;
+  }
+  
   showToast('⏹ Detenido', 'info');
   await refreshStats();
   await refreshLeaders();
@@ -458,6 +549,37 @@ function wireEvents() {
   el.exportBtn.addEventListener("click", () => exportData().catch(console.error));
   el.importBtn.addEventListener("click", () => el.importFile.click());
   el.importFile.addEventListener("change", () => importData().catch(console.error));
+
+  /* ── Navigation ── */
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const viewId = btn.dataset.view;
+      if (viewId) {
+        switchView(viewId);
+        
+        // Refresh data when switching to analytics
+        if (viewId === 'viewAnalytics') {
+          refreshStats();
+          refreshLeaders();
+          refreshHistory();
+        }
+        
+        // Refresh library when switching to library
+        if (viewId === 'viewLibrary') {
+          refreshLibrary();
+        }
+      }
+    });
+  });
+
+  /* ── Toggle Add Media Form ── */
+  if (el.toggleAddForm) {
+    el.toggleAddForm.addEventListener('click', () => {
+      const isHidden = el.mediaForm.style.display === 'none' || !el.mediaForm.style.display;
+      el.mediaForm.style.display = isHidden ? 'grid' : 'none';
+      el.toggleAddForm.textContent = isHidden ? '− Cerrar Formulario' : '+ Añadir Medio';
+    });
+  }
 
   el.mediaForm.addEventListener("submit", async (event) => {
     event.preventDefault();
